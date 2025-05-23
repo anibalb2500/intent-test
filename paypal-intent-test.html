@@ -6,11 +6,16 @@
   <title>Open PayPal</title>
 </head>
 <body>
-  <h2>Continue with PayPal</h2>
-  <p>
-    <a href="https://www.paypal.com/app-switch-checkout?ba_token=BA-0BB96931BX4549228">
-      Tap here to open the PayPal app
-    </a>
-  </p>
+  <h2>Tap the button to continue in the PayPal app</h2>
+  <button onclick="handleIntentLaunch()">Continue with PayPal</button>
+
+  <script>
+    function handleIntentLaunch() {
+      const redirectUrl = "https://www.paypal.com/app-switch-checkout?ba_token=BA-16B3629781723620L&source=braintree_sdk&switch_initiated_time=1725634511440";
+      const urlWithoutScheme = redirectUrl.replace(/^https?:\/\//, '');
+      const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.paypal.android.p2pmobile;end`;
+      window.location.href = intentUrl;
+    }
+  </script>
 </body>
 </html>
