@@ -1,21 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Open PayPal</title>
-</head>
-<body>
-  <h2>Tap the button to continue in the PayPal app</h2>
-  <button onclick="handleIntentLaunch()">Continue with PayPal</button>
+<html>
 
-  <script>
-    function handleIntentLaunch() {
-      const redirectUrl = "https://www.paypal.com/app-switch-checkout?ba_token=BA-16B3629781723620L&source=braintree_sdk&switch_initiated_time=1725634511440";
-      const urlWithoutScheme = redirectUrl.replace(/^https?:\/\//, '');
-      const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.paypal.android.p2pmobile;end`;
-      window.location.href = intentUrl;
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="MyName" content="$myName">
+    <title>App Redirecting</title>
+    <style>
+        .word-wrap {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+<script>
+    const defaultUrl = "https://www.paypal.com/app-switch-checkout?ba_token=BA-16B3629781723620L&source=braintree_sdk&switch_initiated_time=1725634511440";
+
+    function launchIntent(redirectUrl) {
+        const encodedRedirect = redirectUrl.replace(/^https?:\/\//, '');
+        const encodedFallback = encodeURIComponent(redirectUrl);
+        const intentUrl = `intent://${encodedRedirect}#Intent;scheme=https;package=com.paypal.android.p2pmobile;S.browser_fallback_url=${encodedFallback};end;`;
+        window.location.href = intentUrl;
     }
-  </script>
+
+    function handleIntentLaunch() {
+        var redirectUrl = document.getElementById('redirect-url').value;
+        if (!redirectUrl || redirectUrl.trim() === '') {
+            console.log("redirectUrl is empty");
+            return;
+        }
+
+        setCookieUrl(redirectUrl);
+        launchIntent(redirectUrl);
+    }
+
+    function handleRegularUniversalLink() {
+        var redirectUrl = document.getElementById('redirect-url').value;
+
+        if (!redirectUrl || redirectUrl.trim() === '') {
+            console.log("redirectUrl is empty");
+            return;
+        }
+
+        setCookieUrl(redirectUrl);
+        window.location.href = redirectUrl;
+    }
+
+    function setCookieUrl(value, days = 30) {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = `redirect-url=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+    }
+
+    function getCookieUrl() {
+        return document.cookie
+            .split('; ')
+            .find(row => row.startsWith('redirect-url='))
+            ?.split('=')[1] || '';
+    }
+
+    window.onload = function () {
+        var cookieValue = decodeURIComponent(getCookieUrl('redirect-url'));
+        if (!cookieValue || cookieValue.trim() === '') {
+            cookieValue = defaultUrl;
+            setCookieUrl(defaultUrl);
+        }
+        document.getElementById('redirect-url').value = cookieValue;
+        document.getElementById('user-agent').innerText = navigator.userAgent;
+    };
+</script>
+
+<body>
+    <div class="container">
+        <h2>App Redirect</h2>
+        <p>
+            <label>
+                Redirect URL:<br>
+                <input type="text" id="redirect-url">
+            </label>
+            <br>
+            <br>
+            <button onclick="handleRegularUniversalLink()">Regular universal link redirect</button>
+            <br>
+            <br>
+            <button onclick="handleIntentLaunch()">Intent link redirect</button>
+            <br>
+            <br>
+            <div id="user-agent"></div>
+        </p>
+        <br />
+    </div>
 </body>
+
 </html>
