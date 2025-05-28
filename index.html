@@ -3,29 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hello</title>
+    <title>Browser Info</title>
     <style>
       body {
         font-family: Helvetica, Arial;
+        padding: 20px;
       }
-      div.link {
+      #browser-info {
         margin-top: 1rem;
-        padding: 1rem;
-        border: 1px solid gray;
-        border-radius: 6px;
       }
-      input {
-        margin-top: 0.5em;
-        padding: 0.2em 1em;
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 1.1em;
-        width: 6em;
+      #browser-info-content {
+        margin-top: 1rem;
+        line-height: 1.5;
       }
     </style>
   </head>
   <script>
-    const link = "https://www.paypal.com/app-switch-checkout?ba_token=BA-1YM37027K7675740V";
-    
     function detectViewType() {
       const userAgent = navigator.userAgent.toLowerCase();
       
@@ -44,60 +37,13 @@
       return "Browser";
     }
 
-    function openLink() {
-      if (window !== window.top) {
-          window.top.location.href = link;
-        } else {
-          window.location.href = link;
-        }
-    }
-
     document.addEventListener("DOMContentLoaded", function () {
-      const asJsDelayed = document.getElementById("as-js-delayed");
-      const asJsRedirect = document.getElementById("as-js-redirect");
-      const asIntentDelayed = document.getElementById("as-intent-delayed");
-
-      document.getElementById("as-js").addEventListener("click", function (e) {
-        e.preventDefault();
-        openLink();
-      });
-
-      asJsDelayed.addEventListener("click", function (e) {
-        e.preventDefault();
-        const originalText = asJsDelayed.innerHTML;
-        asJsDelayed.innerHTML = "Loading...";
-        setTimeout(function () {
-            asJsDelayed.innerHTML = originalText;
-            openLink();
-        }, parseInt(document.getElementById("delay-time").value));
-      });
-
-      asJsRedirect.addEventListener("click", function (e) {
-        e.preventDefault();
-        const delay = parseInt(document.getElementById("delay-time2").value);
-        const url = `https://shazar-pp-redirect.shazar.workers.dev/?delay=${delay}&target=${link}`;
-        window.location.href = url;
-      });
-
-      asIntentDelayed.addEventListener("click", function (e) {
-        e.preventDefault();
-        const delay = parseInt(document.getElementById("delay-time-intent").value);
-        const url = 'intent://dashboard#Intent;scheme=paypal;package=com.paypal.android.p2pmobile;action=android.intent.action.VIEW;S.browser_fallback_url=https://www.paypal.com/app-switch-checkout?ba_token=BA-1YM37027K7675740V;end';
-        const originalText = asIntentDelayed.innerHTML;
-        asIntentDelayed.innerHTML = "Loading...";
-        setTimeout(function () {
-            asIntentDelayed.innerHTML = originalText;
-            window.location.href = url;
-        }, parseInt(document.getElementById("delay-time-intent").value));
-      });
-
       document.getElementById("show-hide-info").addEventListener("click", function (e) {
         e.preventDefault();
         const infoContent = document.getElementById("browser-info-content");
         const isVisible = infoContent.style.display === "block";
         infoContent.style.display = isVisible ? "none" : "block";
         document.getElementById("show-hide-info").innerHTML = isVisible ? "Show Info" : "Hide Info";
-        document.getElementById("show-hide-info").style.display = isVisible ? "none" : "block";
       });
 
       const platform = navigator.platform || "Unknown platform";
@@ -116,43 +62,9 @@
     });
   </script>
   <body>
-    <div>(This is on github.io)</div>
     <div id="browser-info">
       <a href="#" id="show-hide-info">Show Info</a>
       <div id="browser-info-content" style="display: none"></div>
     </div>
-    <div class="link">
-      <a href="https://www.paypal.com/app-switch-checkout?ba_token=BA-1YM37027K7675740V">Start A/S</a>
-    </div>
-    <div class="link"><a id="as-js" href="#">Start A/S Using JS</a></div>
-    <div class="link">
-        <a id="as-js-delayed" href="#">Start A/S Using JS (with delay)</a>
-        <br/>
-        <input type="text" id="delay-time" value="900" /> ms.
-    </div>
-    <div class="link">
-        <a id="as-js-redirect" href="#">Start A/S Using HTTP Redirect</a>
-        <br/>
-        <input type="text" id="delay-time2" value="900" /> ms.
-    </div>
-
-    <div class="link">
-      <a
-        id="link3"
-        href="intent://dashboard#Intent;scheme=paypal;package=com.paypal.android.p2pmobile;action=android.intent.action.VIEW;S.browser_fallback_url=https://www.paypal.com/app-switch-checkout?ba_token=BA-1YM37027K7675740V;end"
-        >Start A/S Using Intent</a
-      >
-    </div>
-
-    <div class="link">
-        <a id="as-intent-delayed" href="#">Start A/S Using Intent (with delay)</a>
-        <br/>
-        <input type="text" id="delay-time-intent" value="2000" /> ms.
-    </div>
-    <div class="link"><a href="https://prod-appswitch-with-capture-8726d18485cf.herokuapp.com/">SDK</a></div>
-    <div class="link"><a href="page2.html">Same host - in an iframe</a></div>
-    <div class="link"><a href="page3.html">Same host - in an iframe (allow-top-navigation)</a></div>
-    <div class="link"><a href="page2o.html">Other host - in an iframe</a></div>
-    <div class="link"><a href="page3o.html">Other host - in an iframe (allow-top-navigation)</a></div>
   </body>
 </html>
