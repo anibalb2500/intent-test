@@ -1,70 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Browser Info</title>
-    <style>
-      body {
-        font-family: Helvetica, Arial;
-        padding: 20px;
-      }
-      #browser-info {
-        margin-top: 1rem;
-      }
-      #browser-info-content {
-        margin-top: 1rem;
-        line-height: 1.5;
-      }
-    </style>
-  </head>
-  <script>
-    function detectViewType() {
-      const userAgent = navigator.userAgent.toLowerCase();
-      
-      // Check for Chrome Custom Tab
-      const isCCT = userAgent.includes('chrome') && !userAgent.includes('edg') && 
-                    (userAgent.includes('; wv)') || userAgent.includes('; cct)'));
-      
-      // Check for WebView
-      const isWebView = (userAgent.includes('; wv)') || // Android WebView
-                        userAgent.includes('mobile safari/') || // iOS WebView
-                        /\{[^}]+\}/.test(userAgent)) && // Generic WebView check
-                        !isCCT;
+<html>
 
-      if (isCCT) return "Chrome Custom Tab";
-      if (isWebView) return "WebView";
-      return "Browser";
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="MyName" content="$myName">
+    <title>App Redirecting</title>
+    <style>
+        .word-wrap {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+<script>
+    const defaultUrl = "https://www.paypal.com/app-switch-checkout?ba_token=BA-TESTTOKEN&source=braintree_sdk&switch_initiated_time=1725634511440";
+
+    function launchIntent(redirectUrl) {
+        const encodedRedirect = redirectUrl.replace(/^https?:\/\//, '');
+        const encodedFallback = encodeURIComponent(redirectUrl);
+        const intentUrl = `intent://${encodedRedirect}#Intent;scheme=https;package=com.paypal.android.p2pmobile;S.browser_fallback_url=${encodedFallback};end;`;
+        window.location.href = intentUrl;
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-      document.getElementById("show-hide-info").addEventListener("click", function (e) {
-        e.preventDefault();
-        const infoContent = document.getElementById("browser-info-content");
-        const isVisible = infoContent.style.display === "block";
-        infoContent.style.display = isVisible ? "none" : "block";
-        document.getElementById("show-hide-info").innerHTML = isVisible ? "Show Info" : "Hide Info";
-      });
+    function handleIntentLaunch() {
+        var redirectUrl = document.getElementById('redirect-url').value;
+        if (!redirectUrl || redirectUrl.trim() === '') {
+            console.log("redirectUrl is empty");
+            return;
+        }
 
-      const platform = navigator.platform || "Unknown platform";
-      const cookiesEnabled = navigator.cookieEnabled ? "Enabled" : "Disabled";
-      const doNotTrack = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack || "Unknown";
-      const currentUrl = window.location.href;
-      const viewType = detectViewType();
+        setCookieUrl(redirectUrl);
+        launchIntent(redirectUrl);
+    }
 
-      document.getElementById("browser-info-content").innerHTML =
-        `<strong>User-Agent:</strong> ${navigator.userAgent}<br>` +
-        `<strong>Platform:</strong> ${platform}<br>` +
-        `<strong>View Type:</strong> ${viewType}<br>` +
-        `<strong>Cookies Enabled:</strong> ${cookiesEnabled}<br>` +
-        `<strong>Do Not Track:</strong> ${doNotTrack}<br>` +
-        `<strong>Current URL:</strong> ${currentUrl}<br>`;
-    });
-  </script>
-  <body>
-    <div id="browser-info">
-      <a href="#" id="show-hide-info">Show Info</a>
-      <div id="browser-info-content" style="display: none"></div>
+    function handleRegularUniversalLink() {
+        var redirectUrl = document.getElementById('redirect-url').value;
+
+        if (!redirectUrl || redirectUrl.trim() === '') {
+            console.log("redirectUrl is empty");
+            return;
+        }
+
+        setCookieUrl(redirectUrl);
+        window.location.href = redirectUrl;
+    }
+
+    function setCookieUrl(value, days = 30) {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = `redirect-url=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+    }
+
+    function getCookieUrl() {
+        return document.cookie
+            .split('; ')
+            .find(row => row.startsWith('redirect-url='))
+            ?.split('=')[1] || '';
+    }
+
+    window.onload = function () {
+        var cookieValue = decodeURIComponent(getCookieUrl('redirect-url'));
+        if (!cookieValue || cookieValue.trim() === '') {
+            cookieValue = defaultUrl;
+            setCookieUrl(defaultUrl);
+        }
+        document.getElementById('redirect-url').value = cookieValue;
+        document.getElementById('user-agent').innerText = navigator.userAgent;
+    };
+</script>
+
+<body>
+    <div class="container">
+        <h2>App Redirect</h2>
+        <p>
+            <label>
+                Redirect URL:<br>
+                <input type="text" id="redirect-url">
+            </label>
+            <br>
+            <br>
+            <button onclick="handleRegularUniversalLink()">Regular universal link redirect</button>
+            <br>
+            <br>
+            <button onclick="handleIntentLaunch()">Intent link redirect</button>
+            <br>
+            <br>
+            <div id="user-agent"></div>
+        </p>
+        <br />
     </div>
-  </body>
+</body>
+
 </html>
